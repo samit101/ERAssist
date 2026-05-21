@@ -1,0 +1,22 @@
+import { PatientCase, TaskThread } from '../types';
+import { isDue } from './reminders';
+
+export const sortCases = (cases: PatientCase[], tasks: TaskThread[]) =>
+  [...cases].sort((a, b) => {
+    if (a.acuityScore !== b.acuityScore) return b.acuityScore - a.acuityScore;
+    const ta = tasks.filter((t) => t.caseId === a.id && !t.isCompleted);
+    const tb = tasks.filter((t) => t.caseId === b.id && !t.isCompleted);
+    const da = ta.some(isDue) ? 1 : 0;
+    const db = tb.some(isDue) ? 1 : 0;
+    if (da !== db) return db - da;
+    const ea = Math.min(
+      ...ta.filter((t) => t.dueAt).map((t) => new Date(t.dueAt!).getTime()),
+      Infinity,
+    );
+    const eb = Math.min(
+      ...tb.filter((t) => t.dueAt).map((t) => new Date(t.dueAt!).getTime()),
+      Infinity,
+    );
+    if (ea !== eb) return ea - eb;
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
