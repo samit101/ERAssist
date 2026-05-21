@@ -41,3 +41,7 @@ export default function TaskComposer({
     </div>
   );
 }
+import ReminderSelector from './ReminderSelector';
+const quick=['Trops back?','Repeat trop back?','Did patient pee?','UA back?','CT resulted?','X-ray resulted?','Ultrasound resulted?','Lactate back?','Repeat vitals?','Pain better?','Nausea better?','Breathing better?','Ambulated?','PO challenge?','Consultant called back?','Re-page consultant','Call family','Update patient','Talk to nurse','Dispo decision','Discharge instructions','Prescriptions sent?','Work/school note?','Finish MDM','Document reassessment','Check CRISP information','Review old records','Call admitting team','Bed assigned?'];
+export default function TaskComposer({text,setText,reminder,setReminder,onSave}:{text:string;setText:(s:string)=>void;reminder:number;setReminder:(n:number)=>void;onSave:()=>void}){return <div className='space-y-2'><input className='w-full border rounded-xl p-2' placeholder='What are you carrying?' value={text} onChange={e=>setText(e.target.value)}/><div className='flex flex-wrap gap-2'>{quick.map(q=><button key={q} className='text-xs border' onClick={()=>setText(q)}>{q}</button>)}</div><ReminderSelector value={reminder} onChange={setReminder}/><button className='bg-teal-600 text-white w-full' onClick={onSave}>Save thread</button></div>}
+export {quick as PREDEFINED_TASKS};

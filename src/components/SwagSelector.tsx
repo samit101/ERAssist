@@ -29,3 +29,5 @@ export default function AcuitySelector({
     </div>
   );
 }
+export const SWAG_LABELS={1:'Low risk / high diagnostic certainty',2:'Fairly comfortable / routine follow-up',3:'Moderate concern / active workup',4:'Concerning / needs close follow-up',5:'Very worried / unstable / high uncertainty'} as const;
+export default function SwagSelector({value,onChange}:{value:1|2|3|4|5;onChange:(v:1|2|3|4|5)=>void}){return <div className='flex gap-2'>{([1,2,3,4,5] as const).map(v=><button key={v} className={`border ${value===v?'bg-teal-600 text-white':'bg-white'}`} onClick={()=>onChange(v)}>{v}</button>)}</div>}

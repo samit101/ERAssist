@@ -18,14 +18,13 @@ Local-first, mobile-first PWA for room/cue-based ER cognitive threads.
 - Mobile browsers may limit background notifications/vibration/timers.
 - No backend, no auth, localStorage persistence only.
 
-## Admin and customization
-- Open hamburger menu (☰) and choose **Admin**.
-- Edit/add/delete/reset predefined quick tasks there.
-- Acuity labels are in `src/components/SwagSelector.tsx`.
-- Info source pills per case are in `src/components/PatientCaseCard.tsx`.
+## Customize
+- Predefined quick tasks: `src/components/TaskComposer.tsx`.
+- SWAG labels: `src/components/SwagSelector.tsx`.
+- Notification behavior: `src/utils/notifications.ts` and reminder check loop in `src/App.tsx`.
 
 ## Testing notifications on phone
 1. Install PWA from browser menu.
 2. Open app and tap **Enable alerts**.
-3. Add a thread with a reminder.
+3. Add a thread with 1-2 minute reminder (or modify preset).
 4. Keep app foregrounded first; then test background behavior (device/browser dependent).
