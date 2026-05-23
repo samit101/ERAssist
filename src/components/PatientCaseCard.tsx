@@ -48,7 +48,6 @@ export default function PatientCaseCard({
   const due = open.filter((t) => t.dueAt && new Date(t.dueAt) <= new Date());
   const [selectedDispo, setSelectedDispo] = useState<string[]>([]);
   const [showKaiser, setShowKaiser] = useState(false);
-  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
 
   const toggleDispo = (label: string) => {
     const nextSelected = selectedDispo.includes(label)
