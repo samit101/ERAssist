@@ -76,6 +76,8 @@ export default function App() {
 
     {page === 'board' && <>
       <HeaderSummary seen={state.patientSeenCount} target={state.patientTarget} setSeen={(n) => setState((s) => ({ ...s, patientSeenCount: n }))} />
+      <div className='card text-xs'>Alerts when supported by your device/browser. <button className='border ml-2' onClick={() => requestAlerts()}>Enable alerts</button></div>
+
       <div className='card space-y-2'>
         <h2 className='font-semibold'>+ New Case</h2>
         <input className='w-full border rounded-xl p-2' placeholder='Room number or non-identifying cue' value={room} onChange={(e) => setRoom(e.target.value)} />
