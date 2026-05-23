@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PatientCase, TaskThread, AcuityScore, PredefinedTask } from '../types';
 import TaskItem from './TaskItem';
 import AcuitySelector, { ACUITY_LABELS } from './SwagSelector';
@@ -45,21 +46,46 @@ export default function PatientCaseCard({
 }) {
   const open = tasks.filter((t) => !t.isCompleted);
   const due = open.filter((t) => t.dueAt && new Date(t.dueAt) <= new Date());
+  const [selectedDispo, setSelectedDispo] = useState<string[]>([]);
+  const [showKaiser, setShowKaiser] = useState(false);
+
+  const toggleDispo = (label: string) => {
+    const nextSelected = selectedDispo.includes(label)
+      ? selectedDispo.filter((d) => d !== label)
+      : [...selectedDispo, label];
+    setSelectedDispo(nextSelected);
+
+    if (label === 'Adm' && nextSelected.includes('Adm') && !showKaiser) {
+      if (window.confirm('Add Kaiser as a dispo button?')) setShowKaiser(true);
+    }
+  };
 
   return (
     <div className='card space-y-2'>
       <div className='flex justify-between items-start'>
         <div>
           <h3 className='font-semibold'>Room {pc.room}</h3>
-          <span className='text-sm'>Acuity {pc.acuityScore}</span>
         </div>
         <button className='text-xs border px-2 py-1' onClick={onClear}>Clear</button>
       </div>
       <p className='text-xs text-slate-600'>{ACUITY_LABELS[pc.acuityScore]}</p>
       <p className='text-xs'>{open.length} open threads · {due.length} due now</p>
       <AcuitySelector value={pc.acuityScore} onChange={onAcuity} />
+      <div className='space-y-1'>
+        <p className='text-xs text-slate-600'>Dispo</p>
+        <div className='flex flex-wrap gap-2'>
+          {['Adm', 'ICU', 'D/C', 'SW', ...(showKaiser ? ['Kaiser'] : [])].map((d) => (
+            <button
+              key={d}
+              className={`text-xs border rounded-full px-2 py-1 ${selectedDispo.includes(d) ? 'bg-teal-600 text-white' : ''}`}
+              onClick={() => toggleDispo(d)}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+      </div>
       <div>
-        <p className='text-xs text-slate-500 mb-1'>Info Sources</p>
         <div className='flex flex-wrap gap-2'>
           {sources.filter((s)=>!pc.infoSources?.[s.key]).map((s) => (
             <button key={s.key} className='text-xs border rounded-full px-2 py-1' onClick={() => onMarkSource(s.key)}>{s.label}</button>
