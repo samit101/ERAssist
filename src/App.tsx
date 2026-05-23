@@ -13,7 +13,7 @@ const id = () => crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
 export default function App() {
   const [state, setState] = useState<AppState>(defaultState);
-  const [page, setPage] = useState<'board' | 'admin'>('board');
+  const [page, setPage] = useState<'board' | 'newCase' | 'admin'>('board');
   const [menuOpen, setMenuOpen] = useState(false);
   const [room, setRoom] = useState('');
   const [acuity, setAcuity] = useState<1 | 2 | 3 | 4 | 5>(3);
@@ -65,7 +65,7 @@ export default function App() {
     }));
   };
 
-  const nav = (target: 'board' | 'admin') => { setPage(target); setMenuOpen(false); };
+  const nav = (target: 'board' | 'newCase' | 'admin') => { setPage(target); setMenuOpen(false); };
 
   return <main className='max-w-md mx-auto p-3 space-y-3 pb-10'>
     <header className='card flex items-center justify-between relative'>
@@ -91,6 +91,15 @@ export default function App() {
       <div className='card'><details><summary>Recently cleared</summary>{state.recentlyClearedCaseIds.map((cid) => { const pc = state.patientCases.find((c) => c.id === cid); if (!pc) return null; return <div key={cid} className='flex justify-between py-1'><span>Room {pc.room}</span><button className='border' onClick={() => setState((s) => ({ ...s, patientCases: s.patientCases.map((c) => c.id === cid ? { ...c, isCleared: false, clearedAt: null } : c) }))}>Restore</button></div>; })}</details></div>
 
     </>}
+
+
+    {page === 'newCase' && <div className='card space-y-2'>
+      <h2 className='font-semibold'>+ New Case</h2>
+      <input className='w-full border rounded-xl p-2' placeholder='Room number or non-identifying cue' value={room} onChange={(e) => setRoom(e.target.value)} />
+      <p className='text-xs'>Room/cue only. Avoid patient-identifying details.</p>
+      <AcuitySelector value={acuity} onChange={setAcuity} />
+      <TaskComposer text={taskText} setText={setTaskText} reminder={reminder} setReminder={setReminder} predefinedTasks={state.predefinedTasks} onSave={() => { if (!room.trim()) return; const cid = id(); const created = nowIso(); setState((s) => ({ ...s, patientCases: [{ id: cid, room: room.trim(), acuityScore: acuity, createdAt: created, updatedAt: created, isCleared: false, clearedAt: null, infoSources: {} }, ...s.patientCases] })); if (taskText.trim()) addTask(cid, taskText.trim(), reminder); setRoom(''); setTaskText(''); setReminder(0); }} />
+    </div>}
 
     {page === 'admin' && <div className='space-y-3'>
       <div className='card space-y-2'>
