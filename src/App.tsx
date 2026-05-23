@@ -71,14 +71,12 @@ export default function App() {
     <header className='card flex items-center justify-between relative'>
       <button className='border' onClick={() => setMenuOpen((v) => !v)}>☰</button>
       <h1 className='font-semibold'>ER Threadkeeper</h1>
-      <span className='text-xs'>Due {dueTasks.length}</span>
       {menuOpen && <><button className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} aria-label='Close menu' /><div className='absolute left-0 top-12 z-20 bg-white border rounded-xl shadow p-2 w-44 space-y-1'><button className={`w-full text-left p-2 rounded ${page === 'board' ? 'bg-slate-100' : ''}`} onClick={() => nav('board')}>Main Board</button><button className={`w-full text-left p-2 rounded ${page === 'admin' ? 'bg-slate-100' : ''}`} onClick={() => nav('admin')}>Admin</button></div></>}
     </header>
 
     {page === 'board' && <>
-      <HeaderSummary seen={state.patientSeenCount} target={state.patientTarget} setSeen={(n) => setState((s) => ({ ...s, patientSeenCount: n }))} openCases={activeCases.length} openThreads={activeTasks.length} dueNow={dueTasks.length} />
+      <HeaderSummary seen={state.patientSeenCount} target={state.patientTarget} setSeen={(n) => setState((s) => ({ ...s, patientSeenCount: n }))} />
       <div className='card text-xs'>Alerts when supported by your device/browser. <button className='border ml-2' onClick={() => requestAlerts()}>Enable alerts</button></div>
-      {dueTasks.length > 0 ? <div className='card bg-amber-50 border-amber-300'><b>{dueTasks.length} threads are back in mind</b></div> : null}
 
       <div className='card space-y-2'>
         <h2 className='font-semibold'>+ New Case</h2>

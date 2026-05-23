@@ -51,7 +51,6 @@ export default function PatientCaseCard({
       <div className='flex justify-between items-start'>
         <div>
           <h3 className='font-semibold'>Room {pc.room}</h3>
-          <span className='text-sm'>Acuity {pc.acuityScore}</span>
         </div>
         <button className='text-xs border px-2 py-1' onClick={onClear}>Clear</button>
       </div>
@@ -59,7 +58,6 @@ export default function PatientCaseCard({
       <p className='text-xs'>{open.length} open threads · {due.length} due now</p>
       <AcuitySelector value={pc.acuityScore} onChange={onAcuity} />
       <div>
-        <p className='text-xs text-slate-500 mb-1'>Info Sources</p>
         <div className='flex flex-wrap gap-2'>
           {sources.filter((s)=>!pc.infoSources?.[s.key]).map((s) => (
             <button key={s.key} className='text-xs border rounded-full px-2 py-1' onClick={() => onMarkSource(s.key)}>{s.label}</button>
