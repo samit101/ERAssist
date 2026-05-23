@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppState, PredefinedTask } from './types';
 import { defaultPredefinedTasks, defaultState, loadState, saveState } from './utils/storage';
 import HeaderSummary from './components/HeaderSummary';
-import FieldNotes from './components/FieldNotes';
 import TaskComposer from './components/TaskComposer';
 import PatientCaseCard from './components/PatientCaseCard';
 import AcuitySelector from './components/SwagSelector';
@@ -25,6 +24,7 @@ export default function App() {
   const [inlineReminder, setInlineReminder] = useState(0);
   const [toast, setToast] = useState('');
   const [newPredef, setNewPredef] = useState('');
+  const [alertsEnabled, setAlertsEnabled] = useState(typeof Notification !== 'undefined' && Notification.permission === 'granted');
 
   useEffect(() => setState(loadState()), []);
   useEffect(() => saveState(state), [state]);
@@ -37,7 +37,7 @@ export default function App() {
     const check = () => {
       const unalerted = state.taskThreads.filter((t) => isDue(t) && !t.lastAlertedAt);
       if (!unalerted.length) return;
-      fireDueAlert(unalerted);
+      if (alertsEnabled) fireDueAlert(unalerted);
       setState((s) => ({
         ...s,
         taskThreads: s.taskThreads.map((t) =>
@@ -53,7 +53,7 @@ export default function App() {
       window.removeEventListener('focus', check);
       document.removeEventListener('visibilitychange', check);
     };
-  }, [state.taskThreads]);
+  }, [state.taskThreads, alertsEnabled]);
 
   const sorted = useMemo(() => sortCases(activeCases, state.taskThreads), [activeCases, state.taskThreads]);
 
@@ -71,15 +71,11 @@ export default function App() {
     <header className='card flex items-center justify-between relative'>
       <button className='border' onClick={() => setMenuOpen((v) => !v)}>☰</button>
       <h1 className='font-semibold'>ER Threadkeeper</h1>
-      <span className='text-xs'>Due {dueTasks.length}</span>
       {menuOpen && <><button className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} aria-label='Close menu' /><div className='absolute left-0 top-12 z-20 bg-white border rounded-xl shadow p-2 w-44 space-y-1'><button className={`w-full text-left p-2 rounded ${page === 'board' ? 'bg-slate-100' : ''}`} onClick={() => nav('board')}>Main Board</button><button className={`w-full text-left p-2 rounded ${page === 'admin' ? 'bg-slate-100' : ''}`} onClick={() => nav('admin')}>Admin</button></div></>}
     </header>
 
     {page === 'board' && <>
-      <HeaderSummary seen={state.patientSeenCount} target={state.patientTarget} setSeen={(n) => setState((s) => ({ ...s, patientSeenCount: n }))} openCases={activeCases.length} openThreads={activeTasks.length} dueNow={dueTasks.length} />
-      <div className='card text-xs'>Alerts when supported by your device/browser. <button className='border ml-2' onClick={() => requestAlerts()}>Enable alerts</button></div>
-      {dueTasks.length > 0 ? <div className='card bg-amber-50 border-amber-300'><b>{dueTasks.length} threads are back in mind</b></div> : null}
-
+      <HeaderSummary seen={state.patientSeenCount} target={state.patientTarget} setSeen={(n) => setState((s) => ({ ...s, patientSeenCount: n }))} />
       <div className='card space-y-2'>
         <h2 className='font-semibold'>+ New Case</h2>
         <input className='w-full border rounded-xl p-2' placeholder='Room number or non-identifying cue' value={room} onChange={(e) => setRoom(e.target.value)} />
@@ -92,13 +88,13 @@ export default function App() {
 
       <div className='card'><details><summary>Recently cleared</summary>{state.recentlyClearedCaseIds.map((cid) => { const pc = state.patientCases.find((c) => c.id === cid); if (!pc) return null; return <div key={cid} className='flex justify-between py-1'><span>Room {pc.room}</span><button className='border' onClick={() => setState((s) => ({ ...s, patientCases: s.patientCases.map((c) => c.id === cid ? { ...c, isCleared: false, clearedAt: null } : c) }))}>Restore</button></div>; })}</details></div>
 
-      <FieldNotes notes={[...state.fieldNotes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())} onSave={(text, tag) => setState((s) => ({ ...s, fieldNotes: [{ id: id(), text, tag, createdAt: nowIso() }, ...s.fieldNotes] }))} onDelete={(nid) => setState((s) => ({ ...s, fieldNotes: s.fieldNotes.filter((n) => n.id !== nid) }))} />
     </>}
 
     {page === 'admin' && <div className='space-y-3'>
       <div className='card space-y-2'>
         <h2 className='font-semibold'>Admin</h2>
         <p className='text-xs text-slate-600'>These quick tasks appear as buttons when adding threads to a room/case.</p>
+        <div className='text-xs'>Alerts when supported by your device/browser. <button className='bg-teal-600 text-white ml-2' onClick={async () => { if (alertsEnabled) { setAlertsEnabled(false); return; } const perm = await requestAlerts(); setAlertsEnabled(perm === 'granted'); }}>{alertsEnabled ? 'Disable alerts' : 'Enable alerts'}</button></div>
         <div className='flex gap-2'><input className='flex-1 border rounded-xl p-2' placeholder='New predefined task...' value={newPredef} onChange={(e)=>setNewPredef(e.target.value)} /><button className='border' onClick={()=>{if(!newPredef.trim())return; const now=nowIso(); const t:PredefinedTask={id:id(),text:newPredef.trim(),createdAt:now,updatedAt:now}; setState(s=>({...s,predefinedTasks:[...s.predefinedTasks,t]})); setNewPredef('');}}>Add</button></div>
       </div>
       <div className='space-y-2'>{state.predefinedTasks.map((t)=> <div className='card flex items-center gap-2' key={t.id}><input className='flex-1 border rounded-xl p-2' value={t.text} onChange={(e)=>setState(s=>({...s,predefinedTasks:s.predefinedTasks.map(p=>p.id===t.id?{...p,text:e.target.value,updatedAt:nowIso()}:p)}))}/><button className='border' onClick={()=>setState(s=>({...s,predefinedTasks:s.predefinedTasks.filter(p=>p.id!==t.id)}))}>Delete</button></div>)}</div>
